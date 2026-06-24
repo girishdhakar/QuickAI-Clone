@@ -6,7 +6,7 @@ import axios from "axios";
 import {v2 as cloudinary} from "cloudinary";
 import fs from "fs";
 import pdf from "pdf-parse/lib/pdf-parse.js";
-
+//console.log("Gemini Key:", process.env.GEMINI_API_KEY);
 // Initialize OpenAI client for Gemini API
 const AI = new OpenAI({
     apiKey: process.env.GEMINI_API_KEY,
@@ -47,7 +47,7 @@ export const generateArticle = async (req, res) => {
                 },
             ],
             temperature: 0.7,
-            max_tokens: length * 2, // Allow more tokens than word count to ensure completion
+            max_tokens: 4000, // Allow more tokens than word count to ensure completion
         });
 
         const content = response.choices[0].message.content; // Get the article text from the AI response
@@ -106,15 +106,19 @@ export const generateBlogTitle = async (req, res) => {
             messages: [
                 {
                     role: "user",
-                    content: prompt,
+                    content: `Generate 20 SEO-friendly blog titles.
+                        Topic: ${prompt}
+                        Return only the titles in a numbered list.`
                 },
             ],
             temperature: 0.7,
-            max_tokens: 100,
+            max_completion_tokens: 3000,
         });
 
         const content = response.choices[0].message.content; // Get the blog titles from the AI response
-
+        console.log("FINISH REASON =", response.choices[0].finish_reason);
+        console.log("USAGE =", response.usage);
+        
         // Save the blog titles to the database
         await sql`
             INSERT INTO creations (user_id, prompt, content, type)
@@ -316,7 +320,6 @@ export const removeImageObject = async (req, res) => {
 
 
 
-
 // This function reviews a user's uploaded resume (PDF), generates AI feedback, and saves the review in the database.
 // Only premium users can use this feature.
 export const resumeReview = async (req, res) => {
@@ -324,6 +327,10 @@ export const resumeReview = async (req, res) => {
         const { userId } = req.auth(); // Get the user's ID from authentication
         const resume = req.file;   // Get the uploaded resume file
         const plan = req.plan;       // Get the user's plan (free or premium)
+
+       // console.log("PLAN =", plan);
+        //console.log("USER =", userId);
+
 
         // Only premium users can generate images
         // Only premium users can use this feature
@@ -342,17 +349,18 @@ export const resumeReview = async (req, res) => {
             });
         } 
 
+
         // Read the resume file into a buffer
         const dataBuffer = fs.readFileSync(resume.path);
         // Parse the PDF to extract text content
         const pdfData = await pdf(dataBuffer);
 
         // Create a comprehensive prompt for the AI to review the resume with word count guidance
-        const prompt = `Please provide a detailed review of the following resume in approximately 800 words. Include specific feedback on strengths, weaknesses, and actionable improvements. Resume content:\n\n${pdfData.text}`;
+        const prompt = `Please provide a detailed review of the following resume in approximately 400-600 words. Include specific feedback on strengths, weaknesses, and actionable improvements. Resume content:\n\n${pdfData.text}`;
 
         // Ask the AI to generate comprehensive feedback for the resume
         const response = await AI.chat.completions.create({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             messages: [
                 {
                     role: "user",
@@ -360,10 +368,13 @@ export const resumeReview = async (req, res) => {
                 },
             ],
             temperature: 0.7,
-            max_tokens: 1600, // 800 words * 2 = adequate tokens for complete response
+            max_completion_tokens: 4000, // 800 words * 2 = adequate tokens for complete response
         });
 
+        //console.log("AFTER AI CALL");
+
         const content = response.choices[0].message.content; // Get the feedback text from the AI response
+      
         // Save the feedback in the database
         await sql`
             INSERT INTO creations (user_id, prompt, content, type)
@@ -377,10 +388,24 @@ export const resumeReview = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error.message);
-        res.json({
-            success: false,
-            message: error.message
-        });
-    }
+
+    console.log("========== ERROR ==========");
+
+    console.log("MESSAGE:");
+    console.log(error.message);
+
+    console.log("STATUS:");
+    console.log(error.status);
+
+    console.log("RESPONSE:");
+    console.dir(error.response?.data, { depth: null });
+
+    console.log("FULL:");
+    console.dir(error, { depth: null });
+
+    res.json({
+        success: false,
+        message: error.message
+    });
+}
 }

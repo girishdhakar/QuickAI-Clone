@@ -33,6 +33,9 @@ app.use('/api/user', userRouter)
 
 const PORT = process.env.PORT || 3000;
 
+//console.log("SECRET:", process.env.CLERK_SECRET_KEY);
+//console.log("PUBLISHABLE:", process.env.CLERK_PUBLISHABLE_KEY);
+
 // Start the server and listen on the specified port
 app.listen(PORT, ()=>{
     console.log(`Server is running on port ${PORT}`);

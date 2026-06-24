@@ -21,7 +21,7 @@ const Plan = () => {
 
       {/* PricingTable is a pre-built component from Clerk that displays pricing options and handles checkout */}
       <div className='mt-14 max-sm:mx-8'>
-        <PricingTable/>
+        <PricingTable />
       </div>
     </div>
   )

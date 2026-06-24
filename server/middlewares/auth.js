@@ -2,6 +2,7 @@ import { clerkClient } from "@clerk/express";
 
 // This middleware checks if the user is authenticated and if they have a premium plan.
 // It also manages the user's free usage count for non-premium users.
+
 export const auth = async (req, res, next) => {
     try {
         // Get userId and the 'has' function from Clerk's authentication object
@@ -15,7 +16,8 @@ export const auth = async (req, res, next) => {
         // If the user is not premium and has a free usage count, use it
         if (!hasPremiumPlan && user.privateMetadata.free_usage) {
             req.free_usage = user.privateMetadata.free_usage;
-        } else {
+        }
+        else {
             // If the user is premium or doesn't have a usage count, reset it to 0
             await clerkClient.users.updateUser(userId, {
                 privateMetadata: {

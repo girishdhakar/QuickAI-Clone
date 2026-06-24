@@ -25,9 +25,9 @@ const WriteArticle = () => {
   // Array of article length options with word count values and display text
   // Each object contains: length (word count for API), text (user-friendly display)
   const articleLength = [
-    { length: 800, text: "Short (500-800 words)" },
-    { length: 1200, text: "Medium (800-1200 words)" },
-    { length: 1600, text: "Long (1200+ words)" },
+    { length: 250, text: "Short (200-300 words)" },
+    { length: 350, text: "Medium (300-400 words)" },
+    { length: 500, text: "Long (500+ words)" },
   ];
 
   // State to track which article length option is currently selected (defaults to first option - Short)

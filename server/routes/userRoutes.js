@@ -9,4 +9,3 @@ userRouter.get('/get-published-creations', auth, getPublishedCreations);
 userRouter.post('/toggle-like-creations', auth, toggleLikeCreation);
 
 export default userRouter;
-
